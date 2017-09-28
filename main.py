@@ -1,25 +1,9 @@
 #/usr/bin/python
 # encoding: utf-8
-import re
+import re, sys, getopt
 
-def find_pare(input_str):
-	pare_left,pare_right = '(',')'
-	pare_info = {}
-	pare_count = input_str.count(pare_left) #counting '(' nums 
-	new_string = input_str
-	if pare_count > 0:
-		sub_formula = [] 
-		while pare_count > 0:
-			pare_end = new_string.find(pare_right)
-			sub_formula.append (new_string[new_string.find(pare_left)+1:pare_end])
-			new_string = new_string[pare_end+1:]
-			pare_count -= 1
-		return sub_formula
-
-	else:
-		return pare_count
-
-def replace_var(input_str,var_list):
+def replace_var(input_str,input_variable):
+	var_list = input_variable.split(',')
 	new_str = input_str
 	for var_x in var_list:
 		var_num = var_x.split('=')
@@ -32,72 +16,129 @@ def cale(x,y,c):
 	opration={'+':x+y,'-':x-y,'*':x*y}
 	return opration.get(c,'error')
 
-def do_cal(var_list):
-	result = []
-	for cal_list in var_list:
-		num_list = re.findall(r"\d+\.?\d*",cal_list)
-		cale_mark = re.findall(r"[^0-9]",cal_list)
-		result.append(cale(int(num_list[0]),int(num_list[1]),cale_mark[0]))
+def do_cale(formula_str):
+	num_list = re.findall(r"\-?\d+\.?\d*",formula_str)
+	cale_mark = re.findall(r"[^0-9]",formula_str)
+
+	mark = cale_mark[0]
+	x = int(num_list[0])
+	y = int(num_list[1])
+	result = cale(x,y,cale_mark[0])
 
 	return result
 
+def renew_formula(formula_str):
+	return re.sub('\+\-','-',re.sub('\-\-', '+',formula_str))
 
-print "----- test Q2 start-----"
+def init_pare(input_str):
+	pare_left,pare_right = '(',')'
+	pare_count = input_str.count(pare_left) #counting '(' nums 
+	new_string = input_str
+	if pare_count > 0:
+		while pare_count > 0:
+			pare_end = new_string.find(pare_right)
+			pare_start = new_string.find(pare_left)
+			sub_formula_str = new_string[pare_start + 1:pare_end]
 
-formula="x+4-(y-43)*2+(x+58)-2"
-input_variable = "x=43,y=26"
+			cale_result = str(do_cale(sub_formula_str))
+			new_string = new_string[:pare_start] + cale_result + new_string[pare_end + 1:] 
 
-var_list = input_variable.split(',')
+			pare_count -= 1
+		return new_string
 
-print("formula = "+formula)
-
-replace_formula = replace_var(formula,var_list);
-
-print "replace_formula = " +replace_formula
-
-pare_cale = find_pare(replace_formula)
-
-print pare_cale
-
-
-#print 
-#pare_cale_result = do_cal(pare_cale)
+	else:
+		return pare_count
 """
-pare_cale_result = map(str, do_cal(pare_cale))
-
-print pare_cale_result
-
-pare_dict = dict(zip(pare_cale, pare_cale_result))
-
-print pare_dict
-
-print replace_formula
-#new_str = replace_formula
-
-print "replace start --- "
-for dict_index,dict_value in pare_dict.items():
-	x = "\("+dict_index+"\)"
-
-	print x + " => " + dict_value
-	replace_formula = re.sub(x,dict_value,replace_formula)
-	print replace_formula
-	print " "
+do mulie cate
 """
-#print replace_formula
+def init_cale(input_str,pare):
+	pare_count = input_str.count(pare) #counting nums 
+	if pare_count > 0:
+		pattern_str = re.compile(r"\-?\d*"+ re.escape(pare) + "\-?\d*")
+		cale_list = re.findall(pattern_str,input_str)
+		cale_result_list = [];
+		for mulit_cale in cale_list:
+			cale_result_list.append(do_cale(mulit_cale))
+			pare_start = input_str.find(mulit_cale)
 
-#pattern = re.compile(r'\b(' + '|'.join(pare_dict.keys()) + r')\b')
+			cale_result = str(do_cale(mulit_cale))
+			input_str = input_str[:pare_start] + cale_result + input_str[pare_start + len(mulit_cale):] 
+		return input_str
+	else:
+		return pare_count
+"""
+do add & minus cale
+"""
+def init_add_minus(input_str):
+	cale_list = re.findall('\+|\-',input_str)
+	pattern_str = re.compile(r"\-?\d*\+|\-\-?\d*")
+	if(input_str[0] == '-'):
+		new_string = '0'+input_str
+	else:
+		new_string = input_str
+	new_str = re.sub('\+|\-', ',', new_string)
+	count_list = new_str.split(',')
 
-#print pattern
-#result = pattern.sub(lambda x: pare_dict[x.group()], replace_formula)
+	i = tmp_result = 0
+	tmp_result = 0
+	result_obj = [0]
 
-#result = reduce(lambda x, y: x.replace(y, pare_dict[y]), pare_dict, replace_formula)
-#print result
+	for element in cale_list :
+		x = i
+		y = i + 1
+		i += 1
+		tmp_result = cale(int(result_obj[x]),int(count_list[y]),element)
+		result_obj.append(tmp_result)
+	return tmp_result
+
+"""
+def get_file(argv):
+   inputfile = ''
+   outputfile = ''
+   try:
+      opts, args = getopt.getopt(argv,"hi:o:",["ifile=","ofile="])
+   except getopt.GetoptError:
+      print 'test.py -i <inputfile> -o <outputfile>'
+      sys.exit(2)
+   for opt, arg in opts:
+      if opt == '-h':
+         print 'test.py -i <inputfile> -o <outputfile>'
+         sys.exit()
+      elif opt in ("-i", "--ifile"):
+         inputfile = arg
+      elif opt in ("-o", "--ofile"):
+         outputfile = arg
+   print 'input file is：', inputfile
+   print 'output file is：', outputfile
+"""
+
+
+def main(formula,input_variable):
+	replace_formula = replace_var(formula,input_variable); #replace var 
+	print "replace_formula => " + replace_formula + "\n"
+	renew_formula_result = renew_formula(init_pare(replace_formula))
+	print "renew_para_result => " + renew_formula_result + "\n"
+	mulit_result =  renew_formula(init_cale(renew_formula_result,'*'))
+	print "do_plus_result => " + mulit_result + "\n"
+	add_result = init_add_minus(mulit_result)
+	print "add_minus_result => " + str(add_result) + "\n"
+	return add_result
+
+
+print "----- Question 2 Start-----"
+
+
+formula="-80+x+4-(y+24)*22+(x+58)*2"
+input_variable = "x=43,y=-2,z=8"
+print "formula => " + formula + "\n"
+print "input_variable => " + input_variable + "\n"
+print "result => " + str(main(formula,input_variable))
 
 
 
+#get_file(sys.argv[1:])
 
-
-print "-----test Q2 End-----"
+print "----- Question 2 End-----"
 
 
 
