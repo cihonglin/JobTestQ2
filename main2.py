@@ -20,20 +20,10 @@ def do_cale(formula_str):
 	num_list = re.findall(r"\-?\d+\.?\d*",formula_str)
 	cale_mark = re.findall(r"[^0-9]",formula_str)
 
-	#if(len(cale_mark) > 1):
-	print cale_mark
-		#mark = cale_mark[1]
-	#else:
 	mark = cale_mark[0]
 	x = int(num_list[0])
 	y = int(num_list[1])
 	result = cale(x,y,cale_mark[0])
-
-	print x,
-	print mark,
-	print y,
-	print "=",
-	print result
 
 	return result
 
@@ -75,75 +65,56 @@ def init_cale(input_str,pare):
 	else:
 		return pare_count
 
-def init_add_minus(input_str,pare):
-	pare_count = input_str.count(pare) #counting nums 
-	if pare_count > 0:
-		cale_list = re.findall('\+|\-',input_str)
-		pattern_str = re.compile(r"\w*\+|\-\w*")
-
-
-		print cale_list
-		"""
-		for element in cale_list :
-			if(input_str[0] == '-'):
-				cale_list = re.search(pattern_str,input_str[1:])
-				mulit_cale  = '-' + str(cale_list.group())
-				#print "minus"
-				#print mulit_cale
-				#mulit_cale = '-' + mulit_cale
-				#mulit_cale = minus_mark
-			else:
-				cale_list = re.search(pattern_str,input_str)
-				mulit_cale  = str(cale_list.group())
-
-			#print "<>"
-			print mulit_cale
-			pare_start = input_str.find(mulit_cale)
-
-			cale_result = str(do_cale(mulit_cale))
-			input_str = input_str[:pare_start] + cale_result + input_str[pare_start + len(mulit_cale):] 
-
-			print input_str
-			"""
-
+def init_add_minus(input_str):
+	cale_list = re.findall('\+|\-',input_str)
+	pattern_str = re.compile(r"\-?\d*\+|\-\-?\d*")
+	if(input_str[0] == '-'):
+		new_string = '0'+input_str
 	else:
-		return pare_count		
+		new_string = input_str
+	new_str = re.sub('\+|\-', ',', new_string)
+	count_list = new_str.split(',')
 
+	i = tmp_result = 0
+	tmp_result = 0
+	result_obj = [0]
+
+	for element in cale_list :
+		x = i
+		y = i + 1
+		i += 1
+
+		tmp_result = cale(int(result_obj[x]),int(count_list[y]),element)
+		result_obj.append(tmp_result)
+		#print int(result_obj[x]),element,int(count_list[y])
+		#print tmp_result
+
+	return tmp_result
+
+
+def main(formula,input_variable):
+	replace_formula = replace_var(formula,input_variable); #replace var 
+	#print "replace_formula => " + replace_formula + "\n"
+	renew_formula_result = renew_formula(find_pare(replace_formula))
+	#print "renew_formula_result => " + renew_formula_result + "\n"
+	mulit_result =  renew_formula(init_cale(renew_formula_result,'*'))
+	#print "mulit_result => " + mulit_result + "\n"
+	add_result = init_add_minus(mulit_result)
+	#print "add_result => " + str(add_result) + "\n"
+	return add_result
 
 
 
 print "----- test Q2 start-----"
 
-formula="-80+x+4-(y+24)*-22+(x+58)*2"
+formula="80+x+4-(y+24)*22+(x+58)*2"
 input_variable = "x=43,y=-2,z=8"
 
-print "formula = " + formula + "\n"
-print "input_variable = " + input_variable + "\n"
+print "formula => " + formula + "\n"
+print "input_variable => " + input_variable + "\n"
 
-#a,b = '-13',8
+print "result => " + str(main(formula,input_variable))
 
-#print int(a) + b
-
-
-replace_formula = replace_var(formula,input_variable); #replace var 
-
-print "replace_formula = " + replace_formula + "\n"
-#print pare_cale
-renew_formula_result = renew_formula(find_pare(replace_formula))
-
-print renew_formula_result
-
-mulit_result =  init_cale(renew_formula_result,'*')
-
-print mulit_result
-
-add_result = init_add_minus(mulit_result,"+")
-
-#print add_result
-
-#minus_result = init_add_minus(add_result,'-')
-
-#print minus_result
 
 print "-----test Q2 End-----"
 
