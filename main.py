@@ -2,23 +2,23 @@
 # encoding: utf-8
 import re, sys, getopt
 
-def replace_var(input_str,input_variable):
-	var_list = input_variable.split(',')
-	new_str = input_str
+def replace_var(inputStr,inputVariable):
+	var_list = inputVariable.split(',')
+	new_str = inputStr
 	for var_x in var_list:
 		var_num = var_x.split('=')
 		v1,v2 = str(var_num[0]),str(var_num[1])
-		new_str = re.sub(v1, v2, input_str)
-		input_str = new_str
+		new_str = re.sub(v1, v2, inputStr)
+		inputStr = new_str
 	return new_str
 
 def cale(x,y,c):
 	opration={'+':x+y,'-':x-y,'*':x*y}
 	return opration.get(c,'error')
 
-def do_cale(formula_str):
-	num_list = re.findall(r"\-?\d+\.?\d*",formula_str)
-	cale_mark = re.findall(r"[^0-9]",formula_str)
+def do_cale(formulaStr):
+	num_list = re.findall(r"\-?\d+\.?\d*",formulaStr)
+	cale_mark = re.findall(r"[^0-9]",formulaStr)
 
 	mark = cale_mark[0]
 	x = int(num_list[0])
@@ -27,13 +27,13 @@ def do_cale(formula_str):
 
 	return result
 
-def renew_formula(formula_str):
-	return re.sub('\+\-','-',re.sub('\-\-', '+',formula_str))
+def renew_formula(formulaStr):
+	return re.sub('\+\-','-',re.sub('\-\-', '+',formulaStr))
 
-def init_pare(input_str):
+def init_pare(inputStr):
 	pare_left,pare_right = '(',')'
-	pare_count = input_str.count(pare_left) #counting '(' nums 
-	new_string = input_str
+	pare_count = inputStr.count(pare_left) #counting '(' nums 
+	new_string = inputStr
 	if pare_count > 0:
 		while pare_count > 0:
 			pare_end = new_string.find(pare_right)
@@ -51,31 +51,31 @@ def init_pare(input_str):
 """
 do mulie cate
 """
-def init_cale(input_str,pare):
-	pare_count = input_str.count(pare) #counting nums 
+def init_cale(inputStr,pare):
+	pare_count = inputStr.count(pare) #counting nums 
 	if pare_count > 0:
 		pattern_str = re.compile(r"\-?\d*"+ re.escape(pare) + "\-?\d*")
-		cale_list = re.findall(pattern_str,input_str)
+		cale_list = re.findall(pattern_str,inputStr)
 		cale_result_list = [];
 		for mulit_cale in cale_list:
 			cale_result_list.append(do_cale(mulit_cale))
-			pare_start = input_str.find(mulit_cale)
+			pare_start = inputStr.find(mulit_cale)
 
 			cale_result = str(do_cale(mulit_cale))
-			input_str = input_str[:pare_start] + cale_result + input_str[pare_start + len(mulit_cale):] 
-		return input_str
+			inputStr = inputStr[:pare_start] + cale_result + inputStr[pare_start + len(mulit_cale):] 
+		return inputStr
 	else:
 		return pare_count
 """
 do add & minus cale
 """
-def init_add_minus(input_str):
-	cale_list = re.findall('\+|\-',input_str)
+def init_add_minus(inputStr):
+	cale_list = re.findall('\+|\-',inputStr)
 	pattern_str = re.compile(r"\-?\d*\+|\-\-?\d*")
-	if(input_str[0] == '-'):
-		new_string = '0'+input_str
+	if(inputStr[0] == '-'):
+		new_string = '0'+inputStr
 	else:
-		new_string = input_str
+		new_string = inputStr
 	new_str = re.sub('\+|\-', ',', new_string)
 	count_list = new_str.split(',')
 
@@ -113,8 +113,8 @@ def get_file(argv):
 """
 
 
-def main(formula,input_variable):
-	replace_formula = replace_var(formula,input_variable); #replace var 
+def main(formula,inputVariable):
+	replace_formula = replace_var(formula,inputVariable); #replace var 
 	print "replace_formula => " + replace_formula + "\n"
 	renew_formula_result = renew_formula(init_pare(replace_formula))
 	print "renew_para_result => " + renew_formula_result + "\n"
