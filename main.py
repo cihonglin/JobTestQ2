@@ -2,6 +2,8 @@
 # encoding: utf-8
 import re, sys, getopt
 
+
+
 def replaceVar(inputStr,inputVariable):
 	var_list = inputVariable.split(',')
 	new_str = inputStr
@@ -16,18 +18,44 @@ def cale(x,y,c):
 	opration={'+':x+y,'-':x-y,'*':x*y}
 	return opration.get(c,'error')
 
+def doCalculate(x,y,c):
+	
+	#print "x="+ str(x) 
+	#print "y="+ str(y)
+
+	if str(x).isdigit() and str(y).isdigit():
+		op1 = int(x)
+		op2 = int(y)
+		result = cale(op1,op2,str(c))		
+	else:
+		result = str(x)+c+str(y)
+	return result
+
+
 def doCale(formulaStr):
 	num_list = re.findall(r"\-?\d+\.?\d*",formulaStr)
 	cale_mark = re.findall(r"[^0-9]",formulaStr)
 
-	mark = cale_mark[0]
-	x = int(num_list[0])
-	y = int(num_list[1])
-	result = cale(x,y,cale_mark[0])
+	print cale_mark
 
+	if(len(cale_mark) > 1 and cale_mark[0] == '-'):
+		mark = cale_mark[1]
+		x = int(num_list[0])
+	else:
+		mark = cale_mark[0]
+		x = int(num_list[0])
+	
+
+	#mark = cale_mark[0]
+	
+	y = int(num_list[1])
+	result = cale(x,y,mark)
+
+	#print num_list[0] + mark + num_list[1] +"="+str(result)
 	return result
 
 def renewFormula(formulaStr):
+	#print formulaStr
 	return re.sub('\+\-','-',re.sub('\-\-', '+',formulaStr))
 
 def initPare(inputStr):
@@ -39,8 +67,7 @@ def initPare(inputStr):
 			pare_end = new_string.find(pare_right)
 			pare_start = new_string.find(pare_left)
 			sub_formula_str = new_string[pare_start + 1:pare_end]
-
-			cale_result = str(doCale(sub_formula_str))
+			cale_result = str(doMath(sub_formula_str))
 			new_string = new_string[:pare_start] + cale_result + new_string[pare_end + 1:] 
 
 			pare_count -= 1
@@ -58,87 +85,113 @@ def initCale(inputStr,pare):
 		cale_list = re.findall(pattern_str,inputStr)
 		cale_result_list = [];
 		for mulit_cale in cale_list:
-			cale_result_list.append(doCale(mulit_cale))
-			pare_start = inputStr.find(mulit_cale)
+			#print mulit_cale
 
-			cale_result = str(doCale(mulit_cale))
+			opration = mulit_cale.partition(pare)
+			#print opration
+			result = doCalculate(opration[0],opration[2],opration[1])
+			#print result
+			cale_result_list.append(result)
+			pare_start = inputStr.find(mulit_cale)
+			cale_result = str(result)
 			inputStr = inputStr[:pare_start] + cale_result + inputStr[pare_start + len(mulit_cale):] 
-		return inputStr
-	else:
-		return pare_count
+	return inputStr
+
 """
 do add & minus cale
 """
 def initAddMinus(inputStr):
 	cale_list = re.findall('\+|\-',inputStr)
-	pattern_str = re.compile(r"\-?\d*\+|\-\-?\d*")
+	#pattern_str = re.compile(r"\-?\d*\+|\-\-?\d*")
 	if(inputStr[0] == '-'):
 		new_string = '0'+inputStr
 	else:
 		new_string = inputStr
+
 	new_str = re.sub('\+|\-', ',', new_string)
 	count_list = new_str.split(',')
 
-	i = tmp_result = 0
-	tmp_result = 0
-	result_obj = [0]
+	count_list.reverse()
+	cale_list.reverse()
 
-	for element in cale_list :
-		x = i
-		y = i + 1
-		i += 1
-		tmp_result = cale(int(result_obj[x]),int(count_list[y]),element)
-		result_obj.append(tmp_result)
-	return tmp_result
-
-"""
-def get_file(argv):
-   inputfile = ''
-   outputfile = ''
-   try:
-      opts, args = getopt.getopt(argv,"hi:o:",["ifile=","ofile="])
-   except getopt.GetoptError:
-      print 'test.py -i <inputfile> -o <outputfile>'
-      sys.exit(2)
-   for opt, arg in opts:
-      if opt == '-h':
-         print 'test.py -i <inputfile> -o <outputfile>'
-         sys.exit()
-      elif opt in ("-i", "--ifile"):
-         inputfile = arg
-      elif opt in ("-o", "--ofile"):
-         outputfile = arg
-   print 'input file is：', inputfile
-   print 'output file is：', outputfile
-"""
+	#print cale_list
+	#print count_list	
 
 
-def main(formula,inputVariable):
-	replace_formula = replaceVar(formula,inputVariable); #replace var 
-	print "replace_formula => " + replace_formula + "\n"
-	renew_formula_result = renewFormula(initPare(replace_formula))
-	print "renew_para_result => " + renew_formula_result + "\n"
-	mulit_result =  renewFormula(initCale(renew_formula_result,'*'))
-	print "do_plus_result => " + mulit_result + "\n"
+	#print len(cale_list)
+	while len(cale_list) != 0:
+		#print i
+
+		op1 = count_list.pop()
+		op2 = count_list.pop()
+		m = cale_list.pop()
+
+		r = doCalculate(op1,op2,m)
+		count_list.append(r)
+
+		#print str(op1)+m+str(op2)+"="+str(r)
+
+	return r
+
+
+
+def doMath(renewFormulaResult):
+	mulit_result =  renewFormula(initCale(renewFormulaResult,'*'))
+	#print "do_plus_result => " + mulit_result + "\n"
 	add_result = initAddMinus(mulit_result)
-	print "add_minus_result => " + str(add_result) + "\n"
+	#print "add_minus_result => " + str(add_result) + "\n"
 	return add_result
+
+def openFile(fileName):
+	fo = open(fileName,"r+")
+	if(fo):
+		print " open file "+fileName+"..."
+		fc = fo.read()
+		fo.close()
+		return fc
+	else:
+		print fileName+" not exists"
+
+
+
 
 
 print "----- Question 2 Start-----"
 
+string = raw_input("input (1-9)：");
 
-formula="-80+x+4-(y+24)*22+(x+58)*2"
-input_variable = "x=43,y=-2,z=8"
-print "formula => " + formula + "\n"
-print "input_variable => " + input_variable + "\n"
-print "result => " + str(main(formula,input_variable))
+if string.isdigit() and int(string) > 0 and int(string) < 10:
+	filename = "input" + string + ".txt"
+	print "input file name : "+filename
+else:
+	print "out of range"
 
+question_str = openFile("input/"+filename)
 
+split_list = question_str.split()
 
-#get_file(sys.argv[1:])
+split_list.reverse()
 
-print "----- Question 2 End-----"
+formula = split_list.pop()
+
+split_list.reverse()
+
+#print formula_string
+
+print "\nformula => " + formula + "\n"
+
+for input_variable in split_list :
+	print "**********************************"
+	#print formula + "\n"
+	print input_variable
+	replace_formula = replaceVar(formula,input_variable); #replace var 
+	#print "replace_formula => " + replace_formula + "\n"
+	renew_formula_result = renewFormula(initPare(replace_formula))
+	#print renew_formula_result
+	print doMath(renew_formula_result)
+	#print "**********************************\n"
+
+print "\n----- Question 2 End-----"
 
 
 
