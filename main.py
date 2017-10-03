@@ -34,11 +34,16 @@ def renewFormula(formulaStr):
 
 def initPare(inputStr):
 	pare_left,pare_right = '(',')'
-	pare_count = inputStr.count(pare_left) 
+
+	pare_count = inputStr.count(pare_left) #counting '(' nums 
+
 	new_string = pop_string = ''
 	dump_list = []
 	
+	#print inputStr
+
 	if pare_count > 0:
+		i = 0
 		for char in inputStr:
 			if char != pare_right :
 				dump_list.append(char)
@@ -61,7 +66,7 @@ def initPare(inputStr):
 				#print " << [ " + char + " ]  dump_list : " + "".join(dump_list)
 				#print "pop dump_list:" + new_string + " = " + cale_result
 				new_string = ''
-
+			i+=1
 		return renewFormula("".join(dump_list))
 
 	else:
@@ -109,29 +114,53 @@ def initAddMinus(inputStr):
 	#print count_list	
 
 	result = inputStr
-
-	#print len(cale_list)
-	while len(cale_list) != 0:
+	return_string_list = ''
+	while (len(cale_list) != 0) :
 		#print i
+		#print cale_list
+		#print count_list
+		#print return_string_list
+		if(len(count_list) >= 2):
+			m = cale_list.pop()
+			op1 = count_list.pop()
+			op2 = count_list.pop()
+			
+			if str(op1).lstrip('-').isdigit() and str(op2).lstrip('-').isdigit():
+				result = doCalculate(op1,op2,m)
+				count_list.append(result)
+			else:
+				if str(op2).lstrip('-').isdigit():
+					if len(count_list) > 0:
+						return_string_list += str(op1)+str(m)
+						count_list.append(op2)
+					else:
+						return_string_list += str(op1)+str(m)+str(op2)
+				else:
+					if len(count_list) > 1:
+						m2 = cale_list.pop()
+						return_string_list += str(op1)+str(m)+str(op2)+str(m2)
+					else:
+						return_string_list += str(op1)+str(m)+str(op2)
+		else:
+			if(len(count_list) > 0):
+				op = count_list.pop()
+				#print 
+				m = cale_list.pop()
+				return_string_list += str(m)+str(op)
+			else:
+				pass
+	if return_string_list == '':
+		return_val = result
+	else:
+		return_val = return_string_list
+	return return_val
 
-		op1 = count_list.pop()
-		op2 = count_list.pop()
-		m = cale_list.pop()
-
-		result = doCalculate(op1,op2,m)
-		count_list.append(result)
-
-		#print str(op1)+m+str(op2)+"="+str(result)
-
-	return result
 
 def doMath(renewFormulaResult):
 	mulit_result =  renewFormula(initCale(renewFormulaResult,'*'))
 	#print "do_plus_result => " + mulit_result + "\n"
 	add_result = initAddMinus(mulit_result)
 	#print "add_minus_result => " + str(add_result) + "\n"
-	#if(add_result[0] == '0'):
-	#	add_result = add_result[1:]
 	return add_result
 
 def openFile(fileName):
